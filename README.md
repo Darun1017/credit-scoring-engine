@@ -1,15 +1,12 @@
 # IntelliCredit: Alternative Credit Scoring & Portfolio Risk Engine
 
-[![Python](https://img.shields.io/badge/Python-3.9%20%7C%203.10%20%7C%203.11-blue.svg)](https://www.python.org/)
-[![Machine Learning](https://img.shields.io/badge/Domain-FinTech%20%7C%20Credit%20Risk-brightgreen.svg)]()
-[![Rubric Compliance](https://img.shields.io/badge/Dataset-Synthetic%20(No%20Kaggle)-orange.svg)]()
 
 > **Capstone Project — Business Analytics**  
 > An end-to-end data science and machine learning framework designed to evaluate creditworthiness for underserved borrowers using alternative financial and behavioral indicators.
 
 ---
 
-## 📌 Executive Summary & Problem Statement
+## Executive Summary & Problem Statement
 
 Traditional credit scoring models rely heavily on formal bureau history (e.g., CIBIL/FICO scores, legacy banking records), excluding millions of creditworthy thin-file individuals and micro-entrepreneurs. 
 
@@ -20,7 +17,7 @@ Traditional credit scoring models rely heavily on formal bureau history (e.g., C
 
 ---
 
-## 📋 Rubric & Academic Policy Compliance
+## Rubric & Academic Policy Compliance
 
 In accordance with course project rubrics:
 * **No Pre-Built Datasets Policy:** Pre-built datasets from Kaggle, UCI, or GitHub repositories were strictly prohibited. All data used in this study was programmatically generated using `data_generation.py`.
@@ -29,7 +26,7 @@ In accordance with course project rubrics:
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 credit-scoring-engine/
@@ -67,7 +64,7 @@ credit-scoring-engine/
 
 ---
 
-## 📊 Project Workflow & Modules
+## Project Workflow & Modules
 
 The project is structured into 5 sequential review modules:
 
@@ -101,7 +98,7 @@ The project is structured into 5 sequential review modules:
 
 ---
 
-## 📈 Model Performance Summary
+## Model Performance Summary
 
 | Model | Accuracy | Precision | Recall | F1-Score | AUC-ROC |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -115,7 +112,7 @@ The project is structured into 5 sequential review modules:
 
 ---
 
-## 🚀 Getting Started & Execution Guide
+## Getting Started & Execution Guide
 
 ### 1. Clone the Repository
 ```bash
@@ -154,18 +151,6 @@ Execute the notebooks in sequence inside the `notebooks/` directory:
 3. `03_M3_feature_engineering.ipynb`
 4. `04_M4_predictive_modeling.ipynb`
 5. `05_M5_evaluation_interpretation.ipynb`
-
----
-
-## 👥 Team Members & Contributions
-
-| Member Name | Roll Number / Reg. No | Module / Area of Contribution |
-| :--- | :--- | :--- |
-| **Darun R G** | *Your Reg No.* | Synthetic Data Generation & Preprocessing (M0, M1) |
-| *Team Member 2* | *Reg No.* | Exploratory Data Analysis & Visualization (M2) |
-| *Team Member 3* | *Reg No.* | Feature Engineering & WoE/IV Transformation (M3) |
-| *Team Member 4* | *Reg No.* | Predictive Modeling & Hyperparameter Tuning (M4) |
-| *Team Member 5* | *Reg No.* | Evaluation, KS-Statistic & SHAP Interpretation (M5) |
 
 ---
 
