@@ -153,6 +153,3 @@ Execute the notebooks in sequence inside the `notebooks/` directory:
 5. `05_M5_evaluation_interpretation.ipynb`
 
 ---
-
-## 📄 License & Academic Integrity
-This repository is developed strictly for academic evaluation in the Capstone Project course.
