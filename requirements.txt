@@ -14,11 +14,6 @@ imbalanced-learn>=0.11.0
 xgboost>=2.0.0
 lightgbm>=4.0.0,<4.7  # 4.7.0 wheels crash (access violation) on some Windows setups
 
-# Review 2: association rules, macro APIs, dashboard
-mlxtend>=0.23.1
-requests>=2.31.0
-streamlit>=1.50.0
-
 # Model Explainability & Interpretability
 shap>=0.42.0
 

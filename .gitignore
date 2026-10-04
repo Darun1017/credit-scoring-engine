@@ -12,8 +12,6 @@ project_idea_chosen.txt
 models/*.joblib
 models/*.pkl
 !models/model_comparison.csv
-# small calibrated model served by the dashboard (~0.7 MB)
-!models/underwriting_model.joblib
 
 # OS specific files
 .DS_Store
