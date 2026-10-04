@@ -70,8 +70,9 @@ The project is structured into 5 sequential review modules:
 
 ### Module 1: Data Cleaning & Preprocessing (`01_M1`)
 * Ingestion of multi-table synthetic lending data (borrower demographics, transaction logs, macro indicators).
-* Imputation of missing values and median replacement for skew-tolerant variables.
-* Detection and handling of statistical outliers using interquartile range (IQR) bounds.
+* Missing-value treatment demonstrated on 5% injected gaps: KNN imputation (numeric) and mode imputation (categorical).
+* Detection of outliers with interquartile range (IQR) bounds and 1st/99th-percentile winsorisation.
+* Ordinal encoding (education, location tier) from `src/config.py` and one-hot encoding (gender, platform).
 
 ### Module 2: Exploratory Data Analysis (`02_M2`)
 * Target imbalance inspection (approx. 92% non-default vs. 8% default rate).
@@ -79,8 +80,10 @@ The project is structured into 5 sequential review modules:
 * Correlation matrices and macroeconomic shock impact analysis on repayment rates.
 
 ### Module 3: Feature Engineering & Selection (`03_M3`)
-* **Weight of Evidence (WoE)** and **Information Value (IV)** screening to retain high-predictive power features ($IV > 0.1$).
-* Multicollinearity filtering using **Variance Inflation Factor (VIF)**.
+* 14 engineered features from transactions and domain ratios; the train/test split is fixed **before** any target-based step, so no test labels leak into features.
+* Multicollinearity filtering using **Variance Inflation Factor (VIF)** and a |r| > 0.85 correlation filter.
+* Feature selection by **Mutual Information + RFE** on training rows, then a **Weight of Evidence / Information Value** screen that drops features with IV < 0.02 (17 features kept).
+* PCA (9 components explain 90% of variance) and t-SNE projections.
 * Class imbalance mitigation using **SMOTE** (Synthetic Minority Over-sampling Technique) on training sets only (preventing test set leakage).
 
 ### Module 4: Predictive Modeling & Ensembling (`04_M4`)
@@ -89,26 +92,29 @@ The project is structured into 5 sequential review modules:
   * **Random Forest** & **Gradient Boosting**
   * **XGBoost** & **LightGBM**
   * **Voting Classifier** & **Stacking Ensemble**
-* Grid/Randomized hyperparameter search optimizing for ROC-AUC.
+* Grid/Randomized hyperparameter search optimizing for ROC-AUC, with SMOTE applied **inside** each cross-validation fold (imblearn pipeline), so CV scores are honest.
 
 ### Module 5: Evaluation & Interpretability (`05_M5`)
 * **Performance Metrics:** ROC-AUC, PR-AUC curve, Confusion Matrices, and Kolmogorov-Smirnov (**KS-statistic**).
 * **Explainable AI (XAI):** SHAP summary plots, beeswarm distributions, and individual applicant waterfall plots.
-* **Risk Policy Cut-offs:** Evaluation of credit approval rates vs. expected default rates across decision thresholds.
+* **Risk Policy Cut-offs:** INR cost-optimal threshold (missed default ≈ 65% of the loan vs. lost net interest on a wrongly rejected borrower).
 
 ---
 
-## Model Performance Summary
+## Model Performance Summary (test set, 6,000 borrowers)
 
-| Model | Accuracy | Precision | Recall | F1-Score | AUC-ROC |
+| Model | AUC-ROC | PR-AUC | Precision | Recall | F1-Score |
 | :--- | :---: | :---: | :---: | :---: | :---: |
-| **XGBoost (Tuned)** | **67.18%** | **0.1504** | **68.22%** | **0.2465** | **0.7409** |
-| **Stacking Classifier (Tuned)** | 92.13% | 0.0000 | 0.00% | 0.0000 | 0.7398 |
-| **Voting Classifier (Tuned)** | 87.65% | 0.2388 | 26.06% | 0.2492 | 0.7386 |
-| **LightGBM (Tuned)** | 78.17% | 0.1864 | 52.75% | 0.2754 | 0.7343 |
-| **Logistic Regression (Tuned)** | 68.90% | 0.1487 | 62.50% | 0.2402 | 0.7261 |
+| **XGBoost (Tuned)** | **0.738** | **0.204** | 0.151 | 68.2% | 0.247 |
+| **LightGBM (Tuned)** | 0.735 | 0.201 | 0.162 | 61.4% | 0.256 |
+| **Logistic Regression (Tuned)** | 0.728 | 0.197 | 0.148 | 63.8% | 0.241 |
+| **Random Forest (Tuned)** | 0.713 | 0.178 | 0.136 | 66.3% | 0.226 |
+| *True default probability (ceiling)* | *0.781* | *0.262* | | | |
 
-*Note: For credit default prediction, tuned models prioritized recall and AUC-ROC to capture high-risk default applicants while optimizing threshold trade-offs.*
+* Precision/recall/F1 are at the 0.5 threshold. Accuracy is not reported: predicting "no default" for everyone already scores 92%.
+* The labels are random draws from a known probability, so no model can exceed AUC 0.781; XGBoost captures about 85% of the achievable discrimination.
+* KS = 0.36, top-decile lift 2.9×, and the riskiest 30% of applicants contain 63% of all defaults.
+* At the cost-optimal threshold 74.7% of applicants are approved, with a 4.4% default rate (vs. 7.9% if everyone were approved).
 
 ---
 
@@ -153,3 +159,31 @@ Execute the notebooks in sequence inside the `notebooks/` directory:
 5. `05_M5_evaluation_interpretation.ipynb`
 
 ---
+
+---
+
+## Audit Fixes (4 October 2026)
+
+| Issue found | Impact | Fix |
+|---|---|---|
+| `month_label` built with `timedelta(30 * i)` | repeated months (two "2025-01" rows per borrower) | `pd.date_range(..., freq="MS")`; numeric data unchanged |
+| M1 ordinal maps used labels not in the data (`High School`, `Urban`, …) | most rows encoded as −1 | use `src/config.ORDINAL_MAPS`, assert every category maps |
+| M3 `platform_risk_premium` / `macro_stress_exposure` were target means over **all** rows | test labels leaked into features | split fixed first; smoothed target encoding on train only; platform dropped (χ² p = 0.71) |
+| M3 RFE fitted on one random sample's X with **another** sample's y | RFE selection was noise | single fixed train sample |
+| M3 MI / RFE fitted on all rows; constant `total_utility_bills` selected | selection leakage, useless feature | train-only selection, zero-variance filter, WoE/IV screen added (previously claimed but not implemented) |
+| M4 CV and tuning on pre-SMOTEd data | RF CV AUC 0.98 vs 0.69 on test | SMOTE inside an `imblearn` pipeline; RF CV now 0.72, consistent with test |
+| M5 looked for `test_data.csv` / `*.pkl` | silently re-trained **different, untuned** models | loads M3's `test.csv` and M4's `tuned_*.joblib` |
+| Hard-coded `c:/Users/rgdar/...` path; qualitative "Very High" tables; `$` costs | notebook would not run elsewhere; claims contradicted results | relative paths, computed tables, INR costs from the portfolio |
+| LightGBM 4.7.0 crashes on Windows | M4 hung | pinned `lightgbm<4.7` |
+
+---
+
+## Individual Contributions (Review 1)
+
+| Member | Contribution | Rubric component (marks) |
+|---|---|---|
+| **Darun R G** (@Darun1017) | Synthetic data generator, repository setup, initial notebooks M1–M5 and the condensed notebook | Problem & dataset (2) and notebook foundations |
+| **goldmauler** (@Goldmauler) | Pipeline audit and correctness fixes (table above), WoE/IV analysis, evidence-based evaluation findings in M5 | Supports Features (2), Modelling (4), Evaluation (3) |
+| _Member 3_ | _to be filled by the team_ | |
+| _Member 4_ | _to be filled by the team_ | |
+| _Member 5_ | _to be filled by the team_ | |
