@@ -186,4 +186,4 @@ Execute the notebooks in sequence inside the `notebooks/` directory:
 | **goldmauler** (@Goldmauler) | Pipeline audit and correctness fixes (table above), WoE/IV analysis, evidence-based evaluation findings in M5 | Supports Features (2), Modelling (4), Evaluation (3) |
 | **Juturu Naga Abhinava Sai** (@abhinav-juturu) | Exploratory data analysis and visualization, Feature engineering or dimensionality reduction | EDA & Visualization (3), Feature Engineering (2) |
 | **Adithyaa Seyyone** (@adii11001) | _to be filled by the team_ | |
-| **Gowtham Reddy Peddireddy** (@Gowthamreddy285) | _to be filled by the team_ | |
+| **Gowtham Reddy Peddireddy** (@Gowthamreddy285) | Data cleaning and preprocessing | Data cleaning and preprocessing (2)|
